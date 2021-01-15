@@ -13,10 +13,14 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.postsapp.R;
 import com.example.postsapp.adapter.FlickerPageAdapter;
+import com.example.postsapp.adapter.PagingAdapter;
 import com.example.postsapp.databinding.FragmentFlikerPostBinding;
 import com.example.postsapp.model.FlikerPost;
 import com.example.postsapp.repository.FlickerPostRepository;
@@ -33,8 +37,8 @@ public class FlikerPostFragment extends Fragment {
 
     private FragmentFlikerPostBinding mBinding;
     private FlikerPostViewModel mViewModel;
-    private FlickerPageAdapter mAdapter;
-    private FlickerPostRepository mRepository;
+    private PagingAdapter mAdapter;
+
 
     private FlikerPostFragmentCallback mCallback;
 
@@ -64,23 +68,7 @@ public class FlikerPostFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mRepository = new FlickerPostRepository();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                List<FlikerPost> flikerPosts = mRepository.fetchItems();
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateUI(flikerPosts);
-                    }
-                });
-            }
-        }).start();
-
+        mViewModel=new ViewModelProvider(this).get(FlikerPostViewModel.class);
         setHasOptionsMenu(true);
     }
 
@@ -97,23 +85,18 @@ public class FlikerPostFragment extends Fragment {
     }
 
     private void setupAdapter() {
-        mAdapter = new FlickerPageAdapter(getContext());
+        mAdapter = new PagingAdapter(getContext());
+
+        mViewModel.getPagedListLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<FlikerPost>>() {
+            @Override
+            public void onChanged(PagedList<FlikerPost> flikerPosts) {
+                mAdapter.submitList(flikerPosts);
+            }
+        });
+
         mBinding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mBinding.recyclerView.setAdapter(mAdapter);
 
-        mAdapter.setCallback(new FlickerPageAdapter.FlickerPageAdapterCallback() {
-            @Override
-            public void startWebView(String url) {
-                mCallback.onStartWebView(url);
-            }
-        });
-    }
-
-    public void updateUI(List<FlikerPost> flikerPostList) {
-        if (mAdapter != null) {
-            mAdapter.setFlikerPosts(flikerPostList);
-            mAdapter.notifyDataSetChanged();
-        }
     }
 
     @Override

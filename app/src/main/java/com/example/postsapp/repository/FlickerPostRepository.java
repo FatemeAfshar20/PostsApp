@@ -31,18 +31,25 @@ public class FlickerPostRepository {
             Response<FlikerResponse> response=flikerResponseCall.execute();
             FlikerResponse flikerResponse=response.body();
 
-            for (PhotoItem photoItem : flikerResponse.getPhotos().getPhoto()) {
-                FlikerPost flikerPost=
-                        new FlikerPost(photoItem.getTitle(),
-                                photoItem.getUrlS(),
-                                photoItem.getDateupload(),
-                                photoItem.getId());
-
-                flikerPosts.add(flikerPost);
-            }
+            flikerPosts=getFlikerPost(flikerResponse);
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
+        return flikerPosts;
+    }
+
+    private List<FlikerPost> getFlikerPost(FlikerResponse flikerResponse) {
+        List<FlikerPost> flikerPosts=new ArrayList<>();
+        for (PhotoItem photoItem : flikerResponse.getPhotos().getPhoto()) {
+            FlikerPost flikerPost=
+                    new FlikerPost(photoItem.getTitle(),
+                            photoItem.getUrlS(),
+                            photoItem.getDateupload(),
+                            photoItem.getId());
+
+            flikerPosts.add(flikerPost);
+        }
+
         return flikerPosts;
     }
 

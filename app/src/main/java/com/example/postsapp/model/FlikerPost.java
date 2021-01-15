@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.Objects;
 import java.util.UUID;
 
 public class FlikerPost {
@@ -53,5 +54,21 @@ public class FlikerPost {
 
     public void setId(String id) {
         mId = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FlikerPost that = (FlikerPost) o;
+        return mDateUpload == that.mDateUpload &&
+                Objects.equals(mId, that.mId) &&
+                Objects.equals(mTitle, that.mTitle) &&
+                Objects.equals(mUrlSmall, that.mUrlSmall);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mId, mTitle, mUrlSmall, mDateUpload);
     }
 }
